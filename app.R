@@ -1,49 +1,52 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
+library(DT)
+library(dygraphs)
+library(xts)
+library(leaflet)
+
+data <- read.csv("Data/laptops.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+  titlePanel("Laptop Price Predictor"),
+  
+  fluidRow(
+    column(3,
+           selectInput("CPU", h3("CPU Options"), 
+                       choices = list("Choice 1" = 1, "Choice 2" = 2,
+                                      "Choice 3" = 3), selected = 1)),
+    
+    column(3, 
+           selectInput("GPU", h3("GPU Options"), 
+                       choices = list("Choice 1" = 1, "Choice 2" = 2,
+                                      "Choice 3" = 3), selected = 1)),  
+  ),
+  mainPanel(
+    fluidRow(
+      column(4,textOutput("selected_cpu")),
+      column(4,textOutput("selected_gpu")),
+      DTOutput(outputId = "table")
     )
+    
+  )
+  
 )
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
+  
+  output$selected_cpu <- renderText({ 
+    paste("You have selected", input$CPU)
+  })
+  
+  output$selected_gpu <- renderText({ 
+    paste("You have selected", input$GPU)
+  })
+  
+  output$table <- renderDT(data)
+  
 }
 
-# Run the application 
+# Run the app ----
 shinyApp(ui = ui, server = server)
