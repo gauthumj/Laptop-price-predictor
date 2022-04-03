@@ -6,7 +6,12 @@ library(leaflet)
 
 data <- read.csv("Data/laptops.csv")
 
-# Define UI for application that draws a histogram
+ui <- navbarPage("My Application",
+                 tabPanel("Component 1"),
+                 tabPanel("Component 2"),
+                 tabPanel("Component 3")
+)
+
 ui <- fluidPage(
   titlePanel("Laptop Price Predictor"),
   
@@ -21,10 +26,12 @@ ui <- fluidPage(
                        choices = list("Choice 1" = 1, "Choice 2" = 2,
                                       "Choice 3" = 3), selected = 1)),  
   ),
+  column(4,textOutput("selected_cpu")),
+  column(4,textOutput("selected_gpu")),
+  hr(),
+  
   mainPanel(
     fluidRow(
-      column(4,textOutput("selected_cpu")),
-      column(4,textOutput("selected_gpu")),
       DTOutput(outputId = "table")
     )
     
