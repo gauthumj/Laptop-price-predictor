@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css?family=Sofia&effect=neon|outline|emboss|shadow-multiple');
+
+body {
+  background-color: rgb(0, 0, 0);
+  color: white; /* text color */
+}
+
+/* Change header text to imported font */
+h2 {
+  font-family: sans-serif;
+}
+
+tr{
+  color: #fff;
+}
+
+td{
+  color: #000;
+}
+/* Make text visible on inputs */
+.shiny-input-container {
+  color: #fff;
+}
+
+label{
+  color: #fff;
+}
