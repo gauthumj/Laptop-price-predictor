@@ -1,0 +1,145 @@
+---
+title: "EDA"
+author: "Nitin Narayanan 19BPS1050"
+date: "30/04/2022"
+output: pdf_document
+---
+
+```{r}
+df <- read.csv("Data/laptops.csv")
+df <- df[,c(4,5,6,7,8,9,10,13)]
+df <- df[complete.cases(df),]
+dfCopy <- df 
+df
+```
+```{r}
+dfCor <- df
+lbl = superml::LabelEncoder$new()
+
+dfCor$TypeName = lbl$fit_transform(dfCor$TypeName)
+dfCor$ScreenResolution <- lbl$fit_transform(dfCor$ScreenResolution)
+dfCor$Cpu <- lbl$fit_transform(dfCor$Cpu)
+dfCor$Ram <- lbl$fit_transform(dfCor$Ram)
+dfCor$Memory <- lbl$fit_transform(dfCor$Memory)
+dfCor$Gpu <- lbl$fit_transform(dfCor$Gpu)
+dfCor
+```
+
+```{r}
+library(corrplot)
+corrplot(cor(dfCor), order="hclust")
+```
+
+```{r}
+options(scipen=999) 
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+#df$Ram = substr(df$Ram,1,nchar(df$Ram)-2)
+
+
+```{r}
+library(stringr)
+library(tidyr)
+df$Memory <- extract_numeric(df$Memory)
+
+
+df$Ram <- extract_numeric(df$Ram)
+df$Cpu = word(df$Cpu, -1)
+df$Cpu = substr(df$Cpu,1,nchar(df$Cpu)-3)
+df[c('width', 'height')]  <- str_split_fixed(df$ScreenResolution,"x", 2)
+df$ScreenResolution <- extract_numeric(df$width) * extract_numeric(df$height)
+drops <- c("width","height")
+df <- df[ , !(names(df) %in% drops)]
+df$Cpu<-as.numeric(df$Cpu)
+for(i in 1:length(df$Memory)) {
+  if(df$Memory[i] %% 2 !=0) {
+    if(df$Memory[i] == 1) {
+      df$Memory[i] = 1000
+    } else if(df$Memory[i] == 2){
+      df$Memory[i] = 2000
+    } else if(df$Memory[i] == 1281){
+      df$Memory[i] = 1128
+    } else if (df$Memory[i] == 2561){
+      df$Memory[i] = 1256
+    } else if(df$Memory[i] == 5121){
+      df$Memory[i] = 1512
+    }
+  }
+  if(df$Memory[i] > 10000){
+    df$Memory[i] = 750
+  }
+  if(df$ScreenResolution[i] == 94694400) {
+    df$ScreenResolution[i] = 5760000
+  }
+}
+df
+```
+
+
+```{r}
+plot(df$Cpu, df$Price_euros)
+```
+
+```{r}
+plot(df$Memory, df$Price_euros)
+```
+
+```{r}
+ggplot(df, aes(x=Cpu, y=Price_euros)) + 
+  geom_point(aes(col=TypeName, size=Memory)) +   # draw points
+  geom_smooth(method="loess", se=F) + 
+  labs(subtitle="Cpu Freq Vs Price", 
+       y="Price", 
+       x="Cpu Freq", 
+       title="Scatterplot", 
+       caption="Source: midwest")
+```
+
+```{r}
+theme_set(theme_bw())  
+g <- ggplot(df, aes(Cpu, Ram))
+g + geom_count(col="tomato3", show.legend=F) +
+  labs(subtitle="Cpu Freq vs Ram", 
+       y="Ram", 
+       x="Cpu", 
+       title="Counts Plot")
+```
+
+```{r}
+theme_set(theme_bw())  # pre-set the bw theme.
+g <- ggplot(df, aes(Cpu, Ram)) + 
+  labs(subtitle="Cpu Freq vs Ram",
+       title="Bubble chart")
+
+g + geom_jitter(aes(col=TypeName, size=Memory)) + 
+  geom_smooth(aes(col=TypeName), method="lm", se=F)
+```
+
+```{r}
+theme_set(theme_classic())
+
+g <- ggplot(df, aes(ScreenResolution)) + scale_fill_brewer(palette = "Spectral")
+
+g + geom_histogram(aes(fill=TypeName), 
+                   col="black", ) +  # 
+  labs(title="Histogram with Auto Binning", 
+       subtitle="Screen Pixel Count across Types")  
+
+```
+
+```{r}
+theme_set(theme_classic())
+g <- ggplot(df, aes(TypeName, Price_euros))
+g + geom_boxplot(varwidth=T, fill="plum") + 
+    labs(title="Box plot", 
+         subtitle="Price grouped by Typename",
+         x="Class",
+         y="Price")
+```
+
+```{r}
+summary(lm(Price_euros~Cpu+Ram+Memory+ScreenResolution+Inches+TypeName, df))
+```
+
